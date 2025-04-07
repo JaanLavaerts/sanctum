@@ -1,13 +1,15 @@
 package tui
 
 import (
+	"fmt"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 
 func homeUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-
+	
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -24,5 +26,8 @@ func homeUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 }
 
 func  homeView(m Model) string {
-	return "Welcome!"
+	return fmt.Sprintf(
+		"Your passwords: \n\n%s\n",
+		m.entries,
+	) + "\n" 
 }

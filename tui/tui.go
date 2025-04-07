@@ -2,8 +2,8 @@ package tui
 
 import (
 	"errors"
-	"time"
 
+	"github.com/JaanLavaerts/sanctum/database"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -14,18 +14,10 @@ const (
 	Home = "Home"
 )
 
-type Entry struct {
-	Username string
-	Password string
-	Site string
-	Notes string
-	Timestamp time.Time
-}
-
 type Model struct {
 	currentView string
 	masterPassword textinput.Model
-	entries []Entry
+	entries []database.Entry
 	err       error
 }
 
