@@ -11,9 +11,9 @@ import (
 )
 
 type Entry struct {
-	Password string
-	Site string
-	Notes string
+	Password  string
+	Site      string
+	Notes     string
 	Timestamp time.Time
 }
 
@@ -86,7 +86,7 @@ func InserMasterPassword(plain_password string) (int64, error) {
 }
 
 func GetEntries() ([]Entry, error) {
-	query := `SELECT password, site, notes, timestamp from entries LIMIT 1`
+	query := `SELECT password, site, notes, timestamp from entries`
 
 	rows, err := DB.Query(query)
 	if err != nil {

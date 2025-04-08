@@ -1,0 +1,6 @@
+{{define "content"}}
+<form hx-post="/create-master-password" hx-target="body" hx-swap="outerHTML">
+  <input name="master_password" placeholder="master password" required />
+  <button type="submit">Create vault</button>
+</form>
+{{end}}
