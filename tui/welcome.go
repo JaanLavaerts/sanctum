@@ -1,19 +1,14 @@
 package tui
 
 import (
-	"errors"
 	"fmt"
 
-	"github.com/JaanLavaerts/sanctum/crypto"
 	"github.com/JaanLavaerts/sanctum/database"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type (
-	errMsg error
-)
 
-func loginUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
+func welcomeUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -21,23 +16,16 @@ func loginUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 		switch msg.Type {
 			case tea.KeyEnter:
 
-				hashed_password, err := database.GetMasterPassword()
+				value, err := database.InserMasterPassword(m.masterPassword.Value())
 
 				if err != nil {
 					m.err = err
 				}
 
-				value := crypto.VerifyMasterPassword(m.masterPassword.Value(), hashed_password)
-
-				if err != nil {
-					m.err = err
-				}
-
-				if value {
-					m.currentView = Home
-				}
-				 	m.err = errors.New("(master password incorrect)")
+				if value == 1 {
+					m.currentView = Login
 					m.masterPassword.SetValue("")
+				}
 				return m, nil
 			case tea.KeyCtrlC, tea.KeyEsc:
 				return m, tea.Quit
@@ -53,9 +41,9 @@ func loginUpdate(msg tea.Msg, m Model) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func  loginView(m Model) string {
+func  welcomeView(m Model) string {
 	return fmt.Sprintf(
-		"Please provide your master password: %s \n\n%s\n",
+		"Welcome! Please provide a master password: %s \n\n%s\n",
 		m.err,
 		m.masterPassword.View(),
 	) + "\n" 

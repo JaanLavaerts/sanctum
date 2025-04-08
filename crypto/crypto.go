@@ -1,5 +1,15 @@
 package crypto
 
-func VerifyMasterPassword(hash string, masterPassword string) (bool, error) {
-	return hash == masterPassword, nil
+import (
+	"golang.org/x/crypto/bcrypt"
+)
+
+func GenerateHash(password string) (string, error) {
+    bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+    return string(bytes), err
+}
+
+func VerifyMasterPassword(password, hash string) bool {
+    err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+    return err == nil
 }

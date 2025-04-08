@@ -2,6 +2,7 @@ package tui
 
 import (
 	"errors"
+	"log"
 
 	"github.com/JaanLavaerts/sanctum/database"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -10,6 +11,7 @@ import (
 
 
 const (
+	Welcome = "Welcome"
 	Login = "Login"
 	Home = "Home"
 )
@@ -21,10 +23,18 @@ type Model struct {
 	err       error
 }
 
-// TODO: determine initial model based on password recency
 func InitialModel() Model {
+	currentView := Login
+	hashed_password, err := database.GetMasterPassword()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if len(hashed_password) == 0 {
+		currentView = Welcome
+	}
+	
 	m := Model{
-		currentView:     Login,
+		currentView:     currentView,
 		masterPassword: textinput.New(),
 		err:           errors.New(""),
 	}
@@ -40,6 +50,8 @@ func (m Model) Init() tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch m.currentView {
+	case Welcome:
+		return welcomeUpdate(msg, m)
 	case Login:
 		return loginUpdate(msg, m)
 	case Home:
@@ -50,6 +62,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) View() string {
 	switch m.currentView {
+	case Welcome:
+		return welcomeView(m)
 	case Login:
 		return loginView(m)
 	case Home:
