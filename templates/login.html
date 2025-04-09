@@ -1,11 +1,11 @@
-{{ template "layout" . }} {{ define "content" }} {{ if .IsNew }}
-<form method="POST">
+{{ define "login" }} {{ template "layout" . }} {{ if .IsNew }}
+<form hx-post="/register" hx-target="body" method="POST">
   <label for="masterpassword"><b>Create master password</b></label>
   <input type="password" name="masterpassword" required />
   <button type="submit">Create vault</button>
 </form>
 {{ else }}
-<form method="POST">
+<form hx-post="/login" hx-target="body" method="POST">
   <label for="masterpassword"><b>Enter master password</b></label>
   <input type="password" name="masterpassword" required />
   <button type="submit">Login</button>

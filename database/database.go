@@ -107,3 +107,20 @@ func GetEntries() ([]Entry, error) {
 	return entries, nil
 }
 
+
+func InsertEntry(entry Entry) (int64, error) {
+	query := `
+	INSERT INTO entries (password, site, notes, timestamp)
+	VALUES (?, ?, ?, ?);`
+
+	hashed_password, err := crypto.GenerateHash(entry.Password)
+	if err != nil {
+		log.Fatalf("Error creating hash: %q", err) 
+	}
+
+	result, err := DB.Exec(query, hashed_password, entry.Site, entry.Notes, entry.Timestamp)
+	if err != nil {
+		log.Fatalf("Error inserting master password: %q: %s\n", err, query) 
+	}
+	return result.RowsAffected()
+}
