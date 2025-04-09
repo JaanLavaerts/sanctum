@@ -7,6 +7,7 @@ import (
 	"github.com/JaanLavaerts/sanctum/database"
 	"github.com/JaanLavaerts/sanctum/handlers"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type Template struct {
@@ -20,6 +21,7 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 func main() {
 	database.InitDB()
 	e := echo.New()
+	e.Use(middleware.Logger())
 	
 	t := &Template{
 		templates: template.Must(template.ParseGlob("templates/*.html")),
@@ -28,5 +30,5 @@ func main() {
 
 	handlers.RegisterRoutes(e)
 
-	e.Logger.Fatal(e.Start(":8080"))
+	e.Logger.Fatal(e.Start(":8081"))
 }
