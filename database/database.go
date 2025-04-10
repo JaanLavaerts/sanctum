@@ -38,7 +38,8 @@ func InitDB() {
 
 	masterPasswordQuery := `
  		CREATE TABLE IF NOT EXISTS master_password (
-  		password_hash TEXT NOT NULL
+  		password_hash TEXT NOT NULL,
+		token_hash TEXT
 	);`
 
 
