@@ -11,6 +11,7 @@ import (
 )
 
 type Entry struct {
+	Id string
 	Password  string
 	Site      string
 	Notes     string
@@ -95,7 +96,7 @@ func InserMasterPassword(plain_password string) (int64, error) {
 }
 
 func GetEntries() ([]Entry, error) {
-	query := `SELECT password, site, notes, timestamp from entries`
+	query := `SELECT id, password, site, notes, timestamp from entries`
 
 	rows, err := DB.Query(query)
 	if err != nil {
@@ -107,7 +108,7 @@ func GetEntries() ([]Entry, error) {
 	entries := []Entry{}
     for rows.Next() {
             var entry Entry
-            err := rows.Scan(&entry.Password, &entry.Site, &entry.Notes, &entry.Timestamp)
+            err := rows.Scan(&entry.Id, &entry.Password, &entry.Site, &entry.Notes, &entry.Timestamp)
             if err != nil {
 				log.Fatalf("Error getting passwords: %q: %s\n", err, query) 
             }
@@ -129,7 +130,17 @@ func InsertEntry(entry Entry) (int64, error) {
 
 	result, err := DB.Exec(query, hashed_password, entry.Site, entry.Notes, entry.Timestamp)
 	if err != nil {
-		log.Fatalf("Error inserting master password: %q: %s\n", err, query) 
+		log.Fatalf("Error inserting entry: %q: %s\n", err, query) 
+	}
+	return result.RowsAffected()
+}
+
+func DeleteEntry(id string) (int64, error) {
+	query := `DELETE FROM entries WHERE id = (?);`
+
+	result, err := DB.Exec(query, id)
+	if err != nil {
+		log.Fatalf("Error deleting entry: %q: %s\n", err, query) 
 	}
 	return result.RowsAffected()
 }

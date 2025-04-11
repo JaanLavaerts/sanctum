@@ -19,9 +19,10 @@ func RegisterRoutes(e *echo.Echo) {
 	// routes that need auth
 	auth := e.Group("")
 	auth.Use(AuthMiddleware())
-	auth.GET("/logout", Logout)
+	auth.POST("/logout", Logout)
 	auth.GET("/vault", VaultPage)
 	auth.POST("/add", AddEntry)
+	auth.DELETE("/delete/:id", DeleteEntry)
 }
 
 func AuthMiddleware() echo.MiddlewareFunc {

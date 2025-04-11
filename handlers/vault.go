@@ -27,6 +27,7 @@ func VaultPage(c echo.Context) error {
 }
 
 func AddEntry(c echo.Context) error {
+	// TODO cant delete entry right after adding because ID is not set locally, only in DB
 	password := c.FormValue("password")
 	site := c.FormValue("site")
 	notes := c.FormValue("notes")
@@ -46,6 +47,20 @@ func AddEntry(c echo.Context) error {
 
 	if res == 1 {
 		return c.Render(http.StatusOK, "entry", newEntry)
+	}
+
+	return c.NoContent(http.StatusOK)
+}
+
+func DeleteEntry(c echo.Context) error {
+	id := c.Param("id")
+	res, err := database.DeleteEntry(id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if res != 1 {
+		return err
 	}
 
 	return c.NoContent(http.StatusOK)
