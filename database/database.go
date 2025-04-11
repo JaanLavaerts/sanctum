@@ -38,10 +38,13 @@ func InitDB() {
 
 	masterPasswordQuery := `
  		CREATE TABLE IF NOT EXISTS master_password (
-  		password_hash TEXT NOT NULL,
-		token_hash TEXT
+  		password_hash TEXT NOT NULL
 	);`
 
+	tokenQuery := `
+ 		CREATE TABLE IF NOT EXISTS auth_token (
+  		token_hash TEXT NOT NULL
+	);`
 
 	 _, err = DB.Exec(entriesQuery)
  		if err != nil {
@@ -50,7 +53,12 @@ func InitDB() {
 
 	 _, err = DB.Exec(masterPasswordQuery)
  		if err != nil {
-			log.Fatalf("Error creating table: %q: %s\n", err, entriesQuery) 
+			log.Fatalf("Error creating table: %q: %s\n", err, masterPasswordQuery) 
+ 		}
+
+	 _, err = DB.Exec(tokenQuery)
+ 		if err != nil {
+			log.Fatalf("Error creating table: %q: %s\n", err, tokenQuery) 
  		}
 }
 
@@ -122,6 +130,44 @@ func InsertEntry(entry Entry) (int64, error) {
 	result, err := DB.Exec(query, hashed_password, entry.Site, entry.Notes, entry.Timestamp)
 	if err != nil {
 		log.Fatalf("Error inserting master password: %q: %s\n", err, query) 
+	}
+	return result.RowsAffected()
+}
+
+func GetToken() (string, error) {
+	query := `SELECT token_hash from auth_token`
+
+	row := DB.QueryRow(query)
+
+	var	token_hash string
+	err := row.Scan(&token_hash)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", nil
+		}
+		log.Fatalf("Error getting token: %q: %s\n", err, query) 
+	}
+	return token_hash, nil
+}
+
+func InsertToken(hashed_token string) (int64, error) {
+	query := `
+	INSERT INTO auth_token (token_hash)
+	VALUES (?);`
+
+	result, err := DB.Exec(query, hashed_token)
+	if err != nil {
+		log.Fatalf("Error inserting token: %q: %s\n", err, query) 
+	}
+	return result.RowsAffected()
+}
+
+func DeleteToken() (int64, error) {
+	query := `DELETE from auth_token;`
+
+	result, err := DB.Exec(query)
+	if err != nil {
+		log.Fatalf("Error inserting token: %q: %s\n", err, query) 
 	}
 	return result.RowsAffected()
 }

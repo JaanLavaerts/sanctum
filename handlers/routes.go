@@ -10,6 +10,7 @@ func RegisterRoutes(e *echo.Echo) {
 	e.GET("/vault", VaultPage)
 
 	e.POST("/login", Login)
+	e.POST("/logout", Logout)
 	e.POST("/register", Register)
 	e.POST("/add", AddEntry)
 }
