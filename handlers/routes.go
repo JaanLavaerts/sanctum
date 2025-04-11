@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"net/http"
+
 	"github.com/JaanLavaerts/sanctum/crypto"
 	"github.com/JaanLavaerts/sanctum/database"
 	"github.com/labstack/echo/v4"
@@ -12,12 +14,12 @@ func RegisterRoutes(e *echo.Echo) {
 	// public routes
 	e.GET("/", LoginPage)
 	e.POST("/login", Login)
-	e.POST("/logout", Logout)
 	e.POST("/register", Register)
 
 	// routes that need auth
 	auth := e.Group("")
 	auth.Use(AuthMiddleware())
+	auth.GET("/logout", Logout)
 	auth.GET("/vault", VaultPage)
 	auth.POST("/add", AddEntry)
 }
@@ -32,6 +34,9 @@ func AuthMiddleware() echo.MiddlewareFunc {
 					}
 					return crypto.VerifyToken(token, db_token), err
 				},
+		ErrorHandler: func(err error, c echo.Context) error {
+			return c.String(http.StatusUnauthorized, "Unauthorized")
+		},
 	}
 	return middleware.KeyAuthWithConfig(middlewareAuthConfig)
 }
