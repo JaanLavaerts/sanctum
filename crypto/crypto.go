@@ -39,11 +39,7 @@ func GenerateToken() (raw string, hashed string) {
 }
 
 func VerifyToken(input_token string, db_token string) bool {
-    // TODO
-    // 1. decode the token using base64: string => bytes
-    // 2. hash the raw bytes: bytes => string
-    // 3. compare this hash to the hash in DB
-    b, err := base64.RawStdEncoding.DecodeString(input_token) 
+    b, err := base64.RawURLEncoding.DecodeString(input_token) 
     if err != nil {
         log.Fatal(err)
     }

@@ -22,7 +22,7 @@ func main() {
 	database.InitDB()
 	e := echo.New()
 	e.Use(middleware.Logger())
-	
+
 	t := &Template{
 		templates: template.Must(template.ParseGlob("templates/*.html")),
 	}
