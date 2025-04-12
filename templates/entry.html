@@ -1,9 +1,11 @@
 {{ define "entry" }}
-<li id="entry">
+<li>
   <p>{{ .Site }}</p>
   <p>{{ .Notes }}</p>
   <p>********</p>
   <p>{{ .Timestamp.Format "Mon Jan 02 15:04 2006" }}</p>
-  <button hx-delete="/delete/{{ .Id }}" hx-confirm="Are you sure?" hx-swap="delete" hx-target="#entry">delete</button>
+  <button hx-delete="/delete/{{ .Id }}" hx-confirm="Are you sure?" hx-swap="outerHTML" hx-target="closest li">
+    delete
+  </button>
 </li>
 {{ end }}

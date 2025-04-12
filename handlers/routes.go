@@ -23,6 +23,7 @@ func RegisterRoutes(e *echo.Echo) {
 	auth.GET("/vault", VaultPage)
 	auth.POST("/add", AddEntry)
 	auth.DELETE("/delete/:id", DeleteEntry)
+	auth.GET("/generate", GeneratePassword)
 }
 
 func AuthMiddleware() echo.MiddlewareFunc {

@@ -1,18 +1,13 @@
 {{ define "vault" }} {{ template "layout" . }}
 <h2>Vault</h2>
-<form
-  hx-post="/add"
-  hx-target="#entries"
-  hx-swap="beforeend"
-  method="POST"
-  hx-on::after-request="if(event.detail.successful) this.reset()"
->
+<form hx-post="/add" hx-target="#entries" hx-swap="beforeend" method="POST">
   <label for="site">Site</label>
   <input type="text" name="site" required />
   <label for="password">Password</label>
-  <input type="password" name="password" required />
+  <input id="password" type="password" name="password" required />
+  <button hx-get="/generate" hx-swap="outerHTML" hx-target="#password">Generate password</button>
   <label for="notes">Notes</label>
-  <textarea name="notes" required></textarea>
+  <textarea name="notes"></textarea>
   <button type="submit">Add entry</button>
 </form>
 <ul id="entries">

@@ -1,7 +1,10 @@
 package handlers
 
 import (
+	"crypto/rand"
+	"fmt"
 	"log"
+	"math/big"
 	"net/http"
 	"time"
 
@@ -58,4 +61,21 @@ func DeleteEntry(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+func GeneratePassword(c echo.Context) error {
+	charset := "abcdefghijklmnopqrstuvwxyz" +
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" +
+	"!@#$%^&*()-_=+[]{}|;:,.<>?/"
+	password := make([]byte, 12)
+	for i := range password {
+		randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			return err
+		}
+		password[i] = charset[randomIndex.Int64()]
+	}
+	html := fmt.Sprintf(`<input id="password" type="text" value="%s" name="password" required />`, password)
+
+	return c.HTML(http.StatusOK, html)
 }
