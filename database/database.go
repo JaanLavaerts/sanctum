@@ -11,7 +11,7 @@ import (
 )
 
 type Entry struct {
-	Id string
+	Id int64
 	Password  string
 	Site      string
 	Notes     string
@@ -132,17 +132,17 @@ func InsertEntry(entry Entry) (int64, error) {
 	if err != nil {
 		log.Fatalf("Error inserting entry: %q: %s\n", err, query) 
 	}
-	return result.RowsAffected()
+	return result.LastInsertId()
 }
 
-func DeleteEntry(id string) (int64, error) {
+func DeleteEntry(id string) (error) {
 	query := `DELETE FROM entries WHERE id = (?);`
 
-	result, err := DB.Exec(query, id)
+	_, err := DB.Exec(query, id)
 	if err != nil {
 		log.Fatalf("Error deleting entry: %q: %s\n", err, query) 
 	}
-	return result.RowsAffected()
+	return err 
 }
 
 func GetToken() (string, error) {

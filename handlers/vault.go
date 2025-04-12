@@ -40,27 +40,21 @@ func AddEntry(c echo.Context) error {
 		Timestamp: timestamp,
 	}
 	
-	res, err := database.InsertEntry(newEntry)
+	id, err := database.InsertEntry(newEntry)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if res == 1 {
-		return c.Render(http.StatusOK, "entry", newEntry)
-	}
+	newEntry.Id = id
 
-	return c.NoContent(http.StatusOK)
+	return c.Render(http.StatusOK, "entry", newEntry)
 }
 
 func DeleteEntry(c echo.Context) error {
 	id := c.Param("id")
-	res, err := database.DeleteEntry(id)
+	err := database.DeleteEntry(id)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	if res != 1 {
-		return err
 	}
 
 	return c.NoContent(http.StatusOK)
