@@ -1,6 +1,12 @@
 {{ define "vault" }} {{ template "layout" . }}
 <h2>Vault</h2>
-<form hx-post="/add" hx-target="#entries" hx-swap="beforeend" method="POST">
+<form
+  hx-post="/add"
+  hx-target="#entries"
+  hx-swap="beforeend"
+  method="POST"
+  hx-on::after-request="if(event.detail.successful) this.reset()"
+>
   <label for="site">Site</label>
   <input type="text" name="site" required />
   <label for="password">Password</label>
