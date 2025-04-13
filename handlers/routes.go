@@ -25,6 +25,7 @@ func RegisterRoutes(e *echo.Echo) {
 	auth.DELETE("/delete/:id", DeleteEntry)
 	auth.GET("/generate", GeneratePassword)
 	auth.GET("/reveal/:id", RevealPassword)
+	auth.GET("/hide/:id", HidePassword)
 }
 
 func AuthMiddleware() echo.MiddlewareFunc {

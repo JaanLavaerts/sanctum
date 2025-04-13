@@ -2,9 +2,13 @@
 <li>
   <p>{{ .Site }}</p>
   <p>{{ .Notes }}</p>
-  <p id="reveal">********</p>
   <p>{{ .Timestamp.Format "Mon Jan 02 15:04 2006" }}</p>
-  <button hx-get="/reveal/{{ .Id }}" hx-swap="outerHTML" hx-target="#reveal">reveal password</button>
+  <div id="reveal-container-{{ .Id }}">
+    <p>********</p>
+    <button hx-get="/reveal/{{ .Id }}" hx-swap="outerHTML" hx-target="#reveal-container-{{ .Id }}">
+      reveal password
+    </button>
+  </div>
   <button hx-delete="/delete/{{ .Id }}" hx-confirm="Are you sure?" hx-swap="outerHTML" hx-target="closest li">
     delete
   </button>
