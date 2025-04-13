@@ -16,6 +16,7 @@ type Entry struct {
 	Site      string
 	Notes     string
 	Timestamp time.Time
+	Nonce string
 }
 
 var DB *sql.DB
@@ -34,12 +35,15 @@ func InitDB() {
   		password TEXT NOT NULL,
 		site TEXT NOT NULL,
 		notes TEXT NOT NULL,
-		timestamp DATETIME NOT NULL
+		timestamp DATETIME NOT NULL,
+		nonce TEXT
 	);`
 
 	masterPasswordQuery := `
  		CREATE TABLE IF NOT EXISTS master_password (
-  		password_hash TEXT NOT NULL
+		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  		password_hash TEXT NOT NULL,
+		salt TEXT
 	);`
 
 	tokenQuery := `
@@ -63,32 +67,33 @@ func InitDB() {
  		}
 }
 
-func GetMasterPassword() (string, error) {
-	query := `SELECT password_hash from master_password`
+func GetMasterPassword() (string, string, error) {
+	query := `SELECT password_hash, salt from master_password`
 
 	row := DB.QueryRow(query)
 
 	var	password_hash string
-	err := row.Scan(&password_hash)
+	var salt string
+	err := row.Scan(&password_hash, &salt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", nil
+			return "", "", nil
 		}
 		log.Fatalf("Error getting master password: %q: %s\n", err, query) 
 	}
-	return password_hash, nil
+	return password_hash, salt,  nil
 }
 
-func InserMasterPassword(plain_password string) (int64, error) {
+func InserMasterPassword(plain_password string, salt string) (int64, error) {
 	query := `
-	INSERT INTO master_password (password_hash)
-	VALUES (?);`
+	INSERT INTO master_password (password_hash, salt)
+	VALUES (?, ?);`
 
 	hashed_password, err := crypto.GenerateHash(plain_password)
 	if err != nil {
 		log.Fatalf("Error creating hash: %q", err) 
 	}
-	result, err := DB.Exec(query, hashed_password)
+	result, err := DB.Exec(query, hashed_password, salt)
 	if err != nil {
 		log.Fatalf("Error inserting master password: %q: %s\n", err, query) 
 	}
@@ -96,7 +101,7 @@ func InserMasterPassword(plain_password string) (int64, error) {
 }
 
 func GetEntries() ([]Entry, error) {
-	query := `SELECT id, password, site, notes, timestamp from entries`
+	query := `SELECT id, password, site, notes, timestamp FROM entries`
 
 	rows, err := DB.Query(query)
 	if err != nil {
@@ -120,15 +125,10 @@ func GetEntries() ([]Entry, error) {
 
 func InsertEntry(entry Entry) (int64, error) {
 	query := `
-	INSERT INTO entries (password, site, notes, timestamp)
-	VALUES (?, ?, ?, ?);`
+	INSERT INTO entries (password, site, notes, timestamp, nonce)
+	VALUES (?, ?, ?, ?, ?);`
 
-	hashed_password, err := crypto.GenerateHash(entry.Password)
-	if err != nil {
-		log.Fatalf("Error creating hash: %q", err) 
-	}
-
-	result, err := DB.Exec(query, hashed_password, entry.Site, entry.Notes, entry.Timestamp)
+	result, err := DB.Exec(query, entry.Password, entry.Site, entry.Notes, entry.Timestamp, entry.Nonce)
 	if err != nil {
 		log.Fatalf("Error inserting entry: %q: %s\n", err, query) 
 	}
@@ -144,6 +144,21 @@ func DeleteEntry(id string) (error) {
 	}
 	return err 
 }
+
+func GetEntry(id string) (Entry, error) {
+	query := `SELECT * FROM entries WHERE id = (?);`
+
+	row := DB.QueryRow(query, id)
+
+	entry := Entry{}
+	err := row.Scan(&entry.Id, &entry.Password, &entry.Site, &entry.Notes, &entry.Timestamp, &entry.Nonce)
+	if err != nil {
+		return Entry{}, err
+	}
+
+	return entry, nil
+}
+
 
 func GetToken() (string, error) {
 	query := `SELECT token_hash from auth_token`

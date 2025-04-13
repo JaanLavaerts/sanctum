@@ -15,15 +15,16 @@ func RegisterRoutes(e *echo.Echo) {
 	e.GET("/", LoginPage)
 	e.POST("/login", Login)
 	e.POST("/register", Register)
+	e.POST("/logout", Logout)
 
 	// routes that need auth
 	auth := e.Group("")
 	auth.Use(AuthMiddleware())
-	auth.POST("/logout", Logout)
 	auth.GET("/vault", VaultPage)
 	auth.POST("/add", AddEntry)
 	auth.DELETE("/delete/:id", DeleteEntry)
 	auth.GET("/generate", GeneratePassword)
+	auth.GET("/reveal/:id", RevealPassword)
 }
 
 func AuthMiddleware() echo.MiddlewareFunc {
@@ -34,7 +35,7 @@ func AuthMiddleware() echo.MiddlewareFunc {
 					if err != nil {
 						return false, err
 					}
-					return crypto.VerifyToken(token, db_token), err
+					return crypto.VerifyAuthToken(token, db_token), err
 				},
 		ErrorHandler: func(err error, c echo.Context) error {
 			return c.String(http.StatusUnauthorized, "Unauthorized")

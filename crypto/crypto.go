@@ -1,6 +1,8 @@
 package crypto
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
@@ -8,6 +10,7 @@ import (
 	"log"
 
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/crypto/scrypt"
 )
 
 func GenerateHash(password string) (string, error) {
@@ -20,7 +23,54 @@ func VerifyMasterPassword(password, hash string) bool {
     return err == nil
 }
 
-func GenerateToken() (raw string, hashed string) {
+func DeriveKey(password string, salt []byte) ([]byte, error) {
+    key, err := scrypt.Key([]byte(password), salt, 1<<15, 8, 1, 32)
+    return key, err
+}
+
+func GenerateSalt() ([]byte, error) {
+    salt := make([]byte, 16)
+    _, err := rand.Read(salt)
+    return salt, err
+}
+
+func EncryptEntryPassword(plainPassword string, derrivedKey []byte) ([]byte, []byte, error) {
+    nonce := make([]byte, 12)
+    _, err := rand.Read(nonce)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    block, err := aes.NewCipher(derrivedKey)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    aesGCM, err := cipher.NewGCM(block)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    encryptedPassword := aesGCM.Seal(nil, nonce, []byte(plainPassword), nil)
+
+    return encryptedPassword, nonce, err
+}
+
+func DecryptPassword(encryptedPassword string, derivedKey []byte, nonce string) (string, error) {
+    nonceString, _ := base64.StdEncoding.DecodeString(nonce)
+    passwordString, _ := base64.StdEncoding.DecodeString(encryptedPassword)
+
+    block, _ := aes.NewCipher(derivedKey)
+    aesGCM, _ := cipher.NewGCM(block)
+
+    plainPassword, err := aesGCM.Open(nil, nonceString, passwordString, nil)
+    if err != nil {
+        return "", err 
+    }
+    return string(plainPassword), nil
+}
+
+func GenerateAuthToken() (raw string, hashed string) {
     // first generate 32 random bytes, then encode them using base64
     // raw gets stored in the cookie, while the hashed version gets stored in the DB
     b := make([]byte, 32)
@@ -38,7 +88,7 @@ func GenerateToken() (raw string, hashed string) {
     return raw, hashed
 }
 
-func VerifyToken(input_token string, db_token string) bool {
+func VerifyAuthToken(input_token string, db_token string) bool {
     b, err := base64.RawURLEncoding.DecodeString(input_token) 
     if err != nil {
         log.Fatal(err)

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"log"
 	"net/http"
 	"time"
@@ -10,13 +11,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+var DerivedKey []byte
 
 type loginPageData struct {
 	IsNew bool
 }
 
 func LoginPage(c echo.Context) error {
-	masterPassword, err := database.GetMasterPassword()
+	masterPassword, _, err := database.GetMasterPassword()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,7 +32,13 @@ func LoginPage(c echo.Context) error {
 
 func Login(c echo.Context) error {
 	formMasterPassword := c.FormValue("masterpassword")
-	masterPassword, err := database.GetMasterPassword()
+
+	masterPassword, salt, err := database.GetMasterPassword()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	saltString, err := base64.RawURLEncoding.DecodeString(salt)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,7 +47,7 @@ func Login(c echo.Context) error {
 		return c.NoContent(http.StatusUnauthorized)
 	}
 
-	raw_token, hashed_token := crypto.GenerateToken()
+	raw_token, hashed_token := crypto.GenerateAuthToken()
 	writeAuthCookie(c, raw_token)
 
 	res, err :=	database.InsertToken(hashed_token)
@@ -51,6 +59,15 @@ func Login(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
+	if err != nil {
+		return err
+	}
+
+	DerivedKey, err = crypto.DeriveKey(formMasterPassword, saltString)
+	if err != nil {
+		return err
+	}
+
 	c.Response().Header().Set("HX-Redirect", "/vault")
 	return c.NoContent(http.StatusOK)
 }
@@ -58,7 +75,13 @@ func Login(c echo.Context) error {
 func Register(c echo.Context) error {
 	formMasterPassword := c.FormValue("masterpassword")
 
-	res, err := database.InserMasterPassword(formMasterPassword)
+	salt, err := crypto.GenerateSalt()
+	saltString := base64.RawURLEncoding.EncodeToString(salt)
+	if err != nil {
+		return err
+	}
+
+	res, err := database.InserMasterPassword(formMasterPassword, saltString)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -90,17 +113,9 @@ func writeAuthCookie(c echo.Context, raw_token string) {
 	cookie := new(http.Cookie)
 	cookie.Name = "auth-token"
 	cookie.Value = raw_token
-	cookie.Expires = time.Now().Add(24 * time.Hour)
+	cookie.Expires = time.Now().Add(30 * time.Minute)
 	cookie.HttpOnly = true
 	c.SetCookie(cookie)
-}
-
-func readAuthCookie(c echo.Context) (*http.Cookie, error) {
-	cookie, err := c.Cookie("auth-token")
-	if err != nil {
-		return nil, err
-	}
-	return cookie, nil
 }
 
 func clearAuthCookie(c echo.Context) {

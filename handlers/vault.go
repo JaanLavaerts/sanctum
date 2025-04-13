@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"math/big"
 	"net/http"
 	"time"
 
+	"github.com/JaanLavaerts/sanctum/crypto"
 	"github.com/JaanLavaerts/sanctum/database"
 	"github.com/labstack/echo/v4"
 )
@@ -30,17 +32,21 @@ func VaultPage(c echo.Context) error {
 }
 
 func AddEntry(c echo.Context) error {
-	// TODO cant delete entry right after adding because ID is not set locally, only in DB
 	password := c.FormValue("password")
 	site := c.FormValue("site")
 	notes := c.FormValue("notes")
 	timestamp := time.Now()
 
+	encryptedPassword, nonce, err := crypto.EncryptEntryPassword(password, DerivedKey)
+	stringNonce := base64.StdEncoding.EncodeToString(nonce)
+	stringPassword := base64.StdEncoding.EncodeToString(encryptedPassword)
+
 	newEntry := database.Entry{
-		Password: password,	
+		Password: stringPassword,	
 		Site: site,
 		Notes: notes,
 		Timestamp: timestamp,
+		Nonce: stringNonce,
 	}
 	
 	id, err := database.InsertEntry(newEntry)
@@ -61,6 +67,20 @@ func DeleteEntry(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+func RevealPassword(c echo.Context) error {
+	id := c.Param("id")
+	entry, err := database.GetEntry(id)
+	fmt.Println(entry)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	fmt.Println("STUFF", entry, DerivedKey)
+	plainPassword, _ := crypto.DecryptPassword(entry.Password, DerivedKey, entry.Nonce)
+
+	return c.String(200, plainPassword)
 }
 
 func GeneratePassword(c echo.Context) error {
