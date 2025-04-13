@@ -96,6 +96,11 @@ func Register(c echo.Context) error {
 
 func Logout(c echo.Context) error {
 	clearAuthCookie(c)
+	
+	for i := range DerivedKey {
+    	DerivedKey[i] = 0
+	}
+
 	res, err := database.DeleteToken()
 	if err != nil {
 		return err

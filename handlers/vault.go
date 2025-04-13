@@ -71,16 +71,17 @@ func DeleteEntry(c echo.Context) error {
 
 func RevealPassword(c echo.Context) error {
 	id := c.Param("id")
+
 	entry, err := database.GetEntry(id)
-	fmt.Println(entry)
 	if err != nil {
 		log.Fatal(err)
 	}
 	
-	fmt.Println("STUFF", entry, DerivedKey)
 	plainPassword, _ := crypto.DecryptPassword(entry.Password, DerivedKey, entry.Nonce)
 
-	return c.String(200, plainPassword)
+	html := fmt.Sprintf(`<p id="reveal">%s</p>`, plainPassword)
+
+	return c.HTML(http.StatusOK, html)
 }
 
 func GeneratePassword(c echo.Context) error {
