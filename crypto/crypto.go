@@ -53,7 +53,7 @@ func EncryptEntryPassword(plainPassword string, derrivedKey []byte) ([]byte, []b
 
     encryptedPassword := aesGCM.Seal(nil, nonce, []byte(plainPassword), nil)
 
-    return encryptedPassword, nonce, err
+    return encryptedPassword, nonce, nil
 }
 
 func DecryptPassword(encryptedPassword string, derivedKey []byte, nonce string) (string, error) {

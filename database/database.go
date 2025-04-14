@@ -6,7 +6,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/JaanLavaerts/sanctum/crypto"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -24,47 +23,34 @@ var DB *sql.DB
 func InitDB() {
 	var err error
 	DB, err = sql.Open("sqlite3", "database/sanctum.db")
-
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to open DB: %v", err)
 	}
 
-	entriesQuery := `
- 		CREATE TABLE IF NOT EXISTS entries (
-  		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  		password TEXT NOT NULL,
-		site TEXT NOT NULL,
-		notes TEXT NOT NULL,
-		timestamp DATETIME NOT NULL,
-		nonce TEXT
-	);`
+	queries := []string{
+		`CREATE TABLE IF NOT EXISTS entries (
+			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+			password TEXT NOT NULL,
+			site TEXT NOT NULL,
+			notes TEXT NOT NULL,
+			timestamp DATETIME NOT NULL,
+			nonce TEXT
+		);`,
+		`CREATE TABLE IF NOT EXISTS master_password (
+			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+			password_hash TEXT NOT NULL,
+			salt TEXT
+		);`,
+		`CREATE TABLE IF NOT EXISTS auth_token (
+			token_hash TEXT NOT NULL
+		);`,
+	}
 
-	masterPasswordQuery := `
- 		CREATE TABLE IF NOT EXISTS master_password (
-		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  		password_hash TEXT NOT NULL,
-		salt TEXT
-	);`
-
-	tokenQuery := `
- 		CREATE TABLE IF NOT EXISTS auth_token (
-  		token_hash TEXT NOT NULL
-	);`
-
-	 _, err = DB.Exec(entriesQuery)
- 		if err != nil {
-			log.Fatalf("Error creating table: %q: %s\n", err, entriesQuery) 
- 		}
-
-	 _, err = DB.Exec(masterPasswordQuery)
- 		if err != nil {
-			log.Fatalf("Error creating table: %q: %s\n", err, masterPasswordQuery) 
- 		}
-
-	 _, err = DB.Exec(tokenQuery)
- 		if err != nil {
-			log.Fatalf("Error creating table: %q: %s\n", err, tokenQuery) 
- 		}
+	for i, query := range queries {
+		if _, err := DB.Exec(query); err != nil {
+			log.Fatalf("Failed to execute query #%d: %v\nQuery: %s", i+1, err, query)
+		}
+	}
 }
 
 func GetMasterPassword() (string, string, error) {
@@ -84,16 +70,12 @@ func GetMasterPassword() (string, string, error) {
 	return password_hash, salt,  nil
 }
 
-func InserMasterPassword(plain_password string, salt string) (int64, error) {
+func InserMasterPassword(password string, salt string) (int64, error) {
 	query := `
 	INSERT INTO master_password (password_hash, salt)
 	VALUES (?, ?);`
 
-	hashed_password, err := crypto.GenerateHash(plain_password)
-	if err != nil {
-		log.Fatalf("Error creating hash: %q", err) 
-	}
-	result, err := DB.Exec(query, hashed_password, salt)
+	result, err := DB.Exec(query, password, salt)
 	if err != nil {
 		log.Fatalf("Error inserting master password: %q: %s\n", err, query) 
 	}

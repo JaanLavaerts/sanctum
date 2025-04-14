@@ -81,7 +81,11 @@ func Register(c echo.Context) error {
 		return err
 	}
 
-	res, err := database.InserMasterPassword(formMasterPassword, saltString)
+	hashed_password, err := crypto.GenerateHash(formMasterPassword)
+	if err != nil {
+		log.Fatalf("Error creating hash: %q", err) 
+	}
+	res, err := database.InserMasterPassword(hashed_password, saltString)
 	if err != nil {
 		log.Fatal(err)
 	}
