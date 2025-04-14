@@ -1,6 +1,7 @@
 {{ define "entry" }}
 <li>
   <p>{{ .Site }}</p>
+  <p>{{ .Username }}</p>
   <p>{{ .Notes }}</p>
   <p>{{ .Timestamp.Format "Mon Jan 02 15:04 2006" }}</p>
   <div id="reveal-container-{{ .Id }}">

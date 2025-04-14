@@ -12,6 +12,7 @@ import (
 type Entry struct {
 	Id int64
 	Password  string
+	Username string
 	Site      string
 	Notes     string
 	Timestamp time.Time
@@ -31,6 +32,7 @@ func InitDB() {
 		`CREATE TABLE IF NOT EXISTS entries (
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 			password TEXT NOT NULL,
+			username TEXT NOT NULL,
 			site TEXT NOT NULL,
 			notes TEXT NOT NULL,
 			timestamp DATETIME NOT NULL,
@@ -83,7 +85,7 @@ func InserMasterPassword(password string, salt string) (int64, error) {
 }
 
 func GetEntries() ([]Entry, error) {
-	query := `SELECT id, password, site, notes, timestamp FROM entries`
+	query := `SELECT id, password, username, site, notes, timestamp FROM entries`
 
 	rows, err := DB.Query(query)
 	if err != nil {
@@ -95,7 +97,7 @@ func GetEntries() ([]Entry, error) {
 	entries := []Entry{}
     for rows.Next() {
             var entry Entry
-            err := rows.Scan(&entry.Id, &entry.Password, &entry.Site, &entry.Notes, &entry.Timestamp)
+            err := rows.Scan(&entry.Id, &entry.Password, &entry.Username, &entry.Site, &entry.Notes, &entry.Timestamp)
             if err != nil {
 				log.Fatalf("Error getting passwords: %q: %s\n", err, query) 
             }
@@ -107,10 +109,10 @@ func GetEntries() ([]Entry, error) {
 
 func InsertEntry(entry Entry) (int64, error) {
 	query := `
-	INSERT INTO entries (password, site, notes, timestamp, nonce)
-	VALUES (?, ?, ?, ?, ?);`
+	INSERT INTO entries (password, username, site, notes, timestamp, nonce)
+	VALUES (?, ?, ?, ?, ?, ?);`
 
-	result, err := DB.Exec(query, entry.Password, entry.Site, entry.Notes, entry.Timestamp, entry.Nonce)
+	result, err := DB.Exec(query, entry.Password, entry.Username, entry.Site, entry.Notes, entry.Timestamp, entry.Nonce)
 	if err != nil {
 		log.Fatalf("Error inserting entry: %q: %s\n", err, query) 
 	}
@@ -133,7 +135,7 @@ func GetEntry(id string) (Entry, error) {
 	row := DB.QueryRow(query, id)
 
 	entry := Entry{}
-	err := row.Scan(&entry.Id, &entry.Password, &entry.Site, &entry.Notes, &entry.Timestamp, &entry.Nonce)
+	err := row.Scan(&entry.Id, &entry.Password, &entry.Username, &entry.Site, &entry.Notes, &entry.Timestamp, &entry.Nonce)
 	if err != nil {
 		return Entry{}, err
 	}

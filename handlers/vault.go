@@ -33,6 +33,7 @@ func VaultPage(c echo.Context) error {
 
 func AddEntry(c echo.Context) error {
 	password := c.FormValue("password")
+	username := c.FormValue("username")
 	site := c.FormValue("site")
 	notes := c.FormValue("notes")
 	timestamp := time.Now()
@@ -43,6 +44,7 @@ func AddEntry(c echo.Context) error {
 
 	newEntry := database.Entry{
 		Password: stringPassword,	
+		Username: username,
 		Site: site,
 		Notes: notes,
 		Timestamp: timestamp,
