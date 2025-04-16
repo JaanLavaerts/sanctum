@@ -14,8 +14,9 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type vaultPageData struct{
-	Entries []database.Entry
+type vaultPageData struct {
+	Entries    []database.Entry
+	IsLoggedIn bool
 }
 
 func VaultPage(c echo.Context) error {
@@ -25,8 +26,9 @@ func VaultPage(c echo.Context) error {
 	}
 
 	data := vaultPageData{
-		Entries: entries,
-	} 
+		Entries:    entries,
+		IsLoggedIn: true,
+	}
 
 	return c.Render(http.StatusOK, "vault", data)
 }
@@ -38,19 +40,19 @@ func AddEntry(c echo.Context) error {
 	notes := c.FormValue("notes")
 	timestamp := time.Now()
 
-	encryptedPassword, nonce, err := crypto.EncryptEntryPassword(password, DerivedKey)
+	encryptedPassword, nonce, _ := crypto.EncryptEntryPassword(password, DerivedKey)
 	stringNonce := base64.StdEncoding.EncodeToString(nonce)
 	stringPassword := base64.StdEncoding.EncodeToString(encryptedPassword)
 
 	newEntry := database.Entry{
-		Password: stringPassword,	
-		Username: username,
-		Site: site,
-		Notes: notes,
+		Password:  stringPassword,
+		Username:  username,
+		Site:      site,
+		Notes:     notes,
 		Timestamp: timestamp,
-		Nonce: stringNonce,
+		Nonce:     stringNonce,
 	}
-	
+
 	id, err := database.InsertEntry(newEntry)
 	if err != nil {
 		log.Fatal(err)
@@ -78,7 +80,7 @@ func RevealPassword(c echo.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	plainPassword, _ := crypto.DecryptPassword(entry.Password, DerivedKey, entry.Nonce)
 
 	html := fmt.Sprintf(`
@@ -108,8 +110,8 @@ func HidePassword(c echo.Context) error {
 
 func GeneratePassword(c echo.Context) error {
 	charset := "abcdefghijklmnopqrstuvwxyz" +
-	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" +
-	"!@#$%^&*()-_=+[]{}|;:,.<>?/"
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" +
+		"!@#$%^&*()-_=+[]{}|;:,.<>?/"
 	password := make([]byte, 12)
 	for i := range password {
 		randomIndex, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))

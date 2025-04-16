@@ -1,0 +1,103 @@
+:root {
+  --fg: #18181b;
+  --bg: #fcfcfc;
+  --text: #3b4149;
+  --radius: 5px;
+  --border: #e4e4e7;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    max-width: 768px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 1rem;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1, p, span {
+    color: var(--fg)
+}
+
+h2 {
+    font-weight: 100;
+}
+
+input, textarea {
+    color: var(--fg);
+    padding: 4px;
+    margin: 4px 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+.btn {
+    color: white;
+    background: var(--fg);
+    border: none;
+    border-radius: var(--radius);
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.error {
+    color: #FFA500;
+    font-size: 12px;
+}
+
+.vault  {
+    display: flex;
+}
+
+.vault form div {
+    align-items: center;
+    gap: 4px;
+    display: flex;
+}
+
+#entries {
+    width: 100%;
+    margin: 0;
+}
+
+.entry {
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 10px;
+}
+
+.entry h4 {
+    margin: 0;
+    padding-bottom: 5px;
+}
+
+.entry span:nth-child(1){
+    color: #797981;
+}
+
+.entry-field {
+    display: flex;
+    justify-content: space-between;
+}
+
+.action-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}

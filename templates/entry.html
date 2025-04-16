@@ -1,17 +1,19 @@
 {{ define "entry" }}
-<li>
-  <p>{{ .Site }}</p>
-  <p>{{ .Username }}</p>
-  <p>{{ .Notes }}</p>
-  <p>{{ .Timestamp.Format "Mon Jan 02 15:04 2006" }}</p>
-  <div id="reveal-container-{{ .Id }}">
-    <p>********</p>
-    <button hx-get="/reveal/{{ .Id }}" hx-swap="outerHTML" hx-target="#reveal-container-{{ .Id }}">
-      reveal password
-    </button>
+<li class="entry">
+  <h4>{{ .Site }}</h4>
+  <span class="entry-field"><span>username</span>{{ .Username }}</span>
+  <span class="entry-field"><span>notes</span>{{ .Notes }}</span>
+  <span class="entry-field"><span>date</span>{{ .Timestamp.Format "02-01-2006" }}</span>
+  <span class="entry-field"><span>password</span>*******</span>
+  <div class="action-container" id="reveal-container-{{ .Id }}">
+    <div>
+      <button class="btn" hx-get="/reveal/{{ .Id }}" hx-swap="outerHTML" hx-target="#reveal-container-{{ .Id }}">
+        reveal
+      </button>
+      <button class="btn" hx-delete="/delete/{{ .Id }}" hx-confirm="Are you sure?" hx-swap="outerHTML" hx-target="closest li">
+        delete
+      </button>
+    </div>
   </div>
-  <button hx-delete="/delete/{{ .Id }}" hx-confirm="Are you sure?" hx-swap="outerHTML" hx-target="closest li">
-    delete
-  </button>
 </li>
 {{ end }}

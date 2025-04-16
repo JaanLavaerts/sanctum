@@ -1,16 +1,18 @@
 {{ define "login" }} {{ template "layout" . }} {{ if .IsNew }}
 <form hx-post="/register" hx-target="body" method="POST">
-  <label for="masterpassword"><b>Create master password</b></label>
-  <input type="password" name="masterpassword" required />
-  <button type="submit">Create vault</button>
+  <div>
+    <input placeholder="master password" type="password" name="masterpassword" required />
+    <button class="btn" type="submit">create vault</button>
+  </div>
 </form>
 {{ else }}
-{{ if .Error }}
-  <p style="color: red;">{{ .Error }}</p>
-{{ end }}
 <form hx-post="/login" hx-target="body" method="POST">
-  <label for="masterpassword"><b>Enter master password</b></label>
-  <input type="password" name="masterpassword" required />
-  <button type="submit">Login</button>
+  {{ if .Error }}
+    <span class="error">{{ .Error }}</span>
+  {{ end }}
+  <div>
+    <input placeholder="master password" type="password" name="masterpassword" required />
+    <button class="btn" type="submit">login</button>
+  </div>
 </form>
 {{ end }} {{ end }}

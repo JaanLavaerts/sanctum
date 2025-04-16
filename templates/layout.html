@@ -8,11 +8,16 @@
       integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
       crossorigin="anonymous"
     ></script>
-    <title>Sanctum</title>
+    <link rel="stylesheet" href="static/styles.css">
+    <title>sanctum</title>
   </head>
   <body>
-    <h1>Sanctum</h1>
-    <button hx-post="/logout" hx-target="body">Logout</button>
+    <header>
+      <h1>sanctum</h1>
+      {{ if .IsLoggedIn }}
+        <button class="btn" hx-post="/logout" hx-target="body">logout</button>
+      {{ end }}
+    </header>
   </body>
 </html>
 {{ end }}

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/base64"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -14,8 +15,9 @@ import (
 var DerivedKey []byte
 
 type loginPageData struct {
-	IsNew bool
-	Error string
+	IsNew      bool
+	Error      string
+	IsLoggedIn bool
 }
 
 func LoginPage(c echo.Context) error {
@@ -23,9 +25,15 @@ func LoginPage(c echo.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	auth_token, err := database.GetToken()
+	fmt.Println("LOOGED INNN", auth_token)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	data := loginPageData{
-		IsNew: len(masterPassword) == 0,
+		IsNew:      len(masterPassword) == 0,
+		IsLoggedIn: len(auth_token) != 0,
 	}
 
 	return c.Render(http.StatusOK, "login", data)
@@ -46,7 +54,7 @@ func Login(c echo.Context) error {
 
 	if !crypto.VerifyMasterPassword(formMasterPassword, masterPassword) {
 		data := loginPageData{
-			Error: "Wrong master password, please try again.",
+			Error: "wrong master password",
 		}
 		return c.Render(http.StatusOK, "login", data)
 	}

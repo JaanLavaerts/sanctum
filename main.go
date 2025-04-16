@@ -21,6 +21,7 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, c echo.Con
 func main() {
 	database.InitDB()
 	e := echo.New()
+	e.Static("/static", "static")
 	e.Use(middleware.Logger())
 
 	t := &Template{
