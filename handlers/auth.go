@@ -15,6 +15,7 @@ var DerivedKey []byte
 
 type loginPageData struct {
 	IsNew bool
+	Error string
 }
 
 func LoginPage(c echo.Context) error {
@@ -43,14 +44,17 @@ func Login(c echo.Context) error {
 		log.Fatal(err)
 	}
 
-	if !crypto.VerifyMasterPassword(formMasterPassword, masterPassword) { 
-		return c.NoContent(http.StatusUnauthorized)
+	if !crypto.VerifyMasterPassword(formMasterPassword, masterPassword) {
+		data := loginPageData{
+			Error: "Wrong master password, please try again.",
+		}
+		return c.Render(http.StatusOK, "login", data)
 	}
 
 	raw_token, hashed_token := crypto.GenerateAuthToken()
 	writeAuthCookie(c, raw_token)
 
-	res, err :=	database.InsertToken(hashed_token)
+	res, err := database.InsertToken(hashed_token)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -83,7 +87,7 @@ func Register(c echo.Context) error {
 
 	hashed_password, err := crypto.GenerateHash(formMasterPassword)
 	if err != nil {
-		log.Fatalf("Error creating hash: %q", err) 
+		log.Fatalf("Error creating hash: %q", err)
 	}
 	res, err := database.InserMasterPassword(hashed_password, saltString)
 	if err != nil {
@@ -100,9 +104,9 @@ func Register(c echo.Context) error {
 
 func Logout(c echo.Context) error {
 	clearAuthCookie(c)
-	
+
 	for i := range DerivedKey {
-    	DerivedKey[i] = 0
+		DerivedKey[i] = 0
 	}
 
 	res, err := database.DeleteToken()
@@ -116,7 +120,7 @@ func Logout(c echo.Context) error {
 
 	c.Response().Header().Set("HX-Redirect", "/")
 	return c.NoContent(http.StatusOK)
-} 
+}
 
 func writeAuthCookie(c echo.Context, raw_token string) {
 	cookie := new(http.Cookie)
@@ -130,9 +134,9 @@ func writeAuthCookie(c echo.Context, raw_token string) {
 func clearAuthCookie(c echo.Context) {
 	cookie := new(http.Cookie)
 	cookie.Name = "auth-token"
-	cookie.Value = "" 
+	cookie.Value = ""
 	cookie.Expires = time.Unix(0, 0)
-	cookie.MaxAge = -1 
+	cookie.MaxAge = -1
 	cookie.HttpOnly = true
 	c.SetCookie(cookie)
 }
