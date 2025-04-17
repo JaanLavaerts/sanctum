@@ -109,12 +109,13 @@ func RevealPassword(c echo.Context) error {
 	plainPassword, _ := crypto.DecryptPassword(entry.Password, DerivedKey, entry.Nonce)
 
 	html := fmt.Sprintf(`
-	<div id="reveal-container-%s">
-		<p>%s</p>
-		<button hx-get="/hide/%s" hx-swap="outerHTML" hx-target="#reveal-container-%s">
-		hide password
-		</button>
-  	</div>`, id, plainPassword, id, id)
+    <div>
+        <span>%s</span>
+        <button class="btn" hx-get="/hide/%s" hx-swap="outerHTML" hx-target="closest div">
+          x
+        </button>
+    </div>
+	`, plainPassword, id)
 
 	return c.HTML(http.StatusOK, html)
 }
@@ -123,12 +124,12 @@ func HidePassword(c echo.Context) error {
 	id := c.Param("id")
 
 	html := fmt.Sprintf(`
-	<div id="reveal-container-%s">
-		<p>********</p>
-		<button hx-get="/reveal/%s" hx-swap="outerHTML" hx-target="#reveal-container-%s">
-		reveal password
-		</button>
-  	</div>`, id, id, id)
+    <div>
+        <span>•••••••</span>
+        <button class="btn" hx-get="/reveal/%s" hx-swap="outerHTML" hx-target="closest div">
+          x
+        </button>
+  	</div>`, id)
 
 	return c.HTML(http.StatusOK, html)
 }
