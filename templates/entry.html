@@ -4,15 +4,15 @@
   <span class="entry-field"><span>username</span>{{ .Username }}</span>
   <span class="entry-field"><span>notes</span>{{ .Notes }}</span>
   <span class="entry-field"><span>date</span>{{ .Timestamp.Format "02-01-2006" }}</span>
-  <span class="entry-field"><span>password</span>*******</span>
+  <span class="entry-field"><span>password</span>•••••••</span>
   <div class="action-container" id="reveal-container-{{ .Id }}">
     <div>
-      <button class="btn" hx-get="/reveal/{{ .Id }}" hx-swap="outerHTML" hx-target="#reveal-container-{{ .Id }}">
-        reveal
-      </button>
-      <button class="btn" hx-delete="/delete/{{ .Id }}" hx-confirm="Are you sure?" hx-swap="outerHTML" hx-target="closest li">
-        delete
-      </button>
+        <button class="btn" hx-get="/reveal/{{ .Id }}" hx-swap="outerHTML" hx-target="#reveal-container-{{ .Id }}">
+          reveal
+        </button>
+        <button class="btn" hx-delete="/delete/{{ .Id }}" hx-confirm="Are you sure?" hx-swap="outerHTML" hx-target="closest li">
+          delete
+        </button>
     </div>
   </div>
 </li>

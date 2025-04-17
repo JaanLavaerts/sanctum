@@ -27,7 +27,23 @@ func VaultPage(c echo.Context) error {
 
 	data := vaultPageData{
 		Entries:    entries,
-		IsLoggedIn: true,
+		IsLoggedIn: len(DerivedKey) != 0,
+	}
+
+	if len(DerivedKey) == 0 {
+		_, err := database.DeleteToken()
+		if err != nil {
+			return err
+		}
+
+		clearAuthCookie(c)
+		data := loginPageData{
+			IsNew:      false,
+			IsLoggedIn: false,
+			Error:      "session expired",
+		}
+
+		return c.Render(http.StatusOK, "login", data)
 	}
 
 	return c.Render(http.StatusOK, "vault", data)
@@ -74,6 +90,15 @@ func DeleteEntry(c echo.Context) error {
 }
 
 func RevealPassword(c echo.Context) error {
+
+	if len(DerivedKey) == 0 {
+		promptMasterPassword := c.Request().Header.Get("HX-Prompt")
+
+		if !AuthenticateUser(promptMasterPassword) {
+			return c.String(http.StatusUnauthorized, "NO")
+		}
+	}
+
 	id := c.Param("id")
 
 	entry, err := database.GetEntry(id)

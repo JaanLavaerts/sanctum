@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/base64"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -26,7 +25,7 @@ func LoginPage(c echo.Context) error {
 		log.Fatal(err)
 	}
 	auth_token, err := database.GetToken()
-	fmt.Println("LOOGED INNN", auth_token)
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,17 +41,7 @@ func LoginPage(c echo.Context) error {
 func Login(c echo.Context) error {
 	formMasterPassword := c.FormValue("masterpassword")
 
-	masterPassword, salt, err := database.GetMasterPassword()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	saltString, err := base64.RawURLEncoding.DecodeString(salt)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if !crypto.VerifyMasterPassword(formMasterPassword, masterPassword) {
+	if !AuthenticateUser(formMasterPassword) {
 		data := loginPageData{
 			Error: "wrong master password",
 		}
@@ -71,11 +60,6 @@ func Login(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	if err != nil {
-		return err
-	}
-
-	DerivedKey, err = crypto.DeriveKey(formMasterPassword, saltString)
 	if err != nil {
 		return err
 	}
@@ -147,4 +131,26 @@ func clearAuthCookie(c echo.Context) {
 	cookie.MaxAge = -1
 	cookie.HttpOnly = true
 	c.SetCookie(cookie)
+}
+
+func AuthenticateUser(formMasterPassword string) bool {
+	masterPassword, salt, err := database.GetMasterPassword()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	saltString, err := base64.RawURLEncoding.DecodeString(salt)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !crypto.VerifyMasterPassword(formMasterPassword, masterPassword) {
+		return false
+	}
+
+	DerivedKey, err = crypto.DeriveKey(formMasterPassword, saltString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return true
 }
