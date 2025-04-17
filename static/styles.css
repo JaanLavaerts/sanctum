@@ -106,3 +106,9 @@ form {
     display: flex;
     justify-content: space-between;
 }
+
+.reveal-container div {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+}

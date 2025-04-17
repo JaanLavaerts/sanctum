@@ -1,14 +1,11 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/JaanLavaerts/sanctum/crypto"
 	"github.com/JaanLavaerts/sanctum/database"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
-
 
 func RegisterRoutes(e *echo.Echo) {
 	// public routes
@@ -32,14 +29,14 @@ func AuthMiddleware() echo.MiddlewareFunc {
 	middlewareAuthConfig := middleware.KeyAuthConfig{
 		KeyLookup: "cookie:auth-token",
 		Validator: func(token string, c echo.Context) (bool, error) {
-					db_token, err := database.GetToken()
-					if err != nil {
-						return false, err
-					}
-					return crypto.VerifyAuthToken(token, db_token), err
-				},
+			db_token, err := database.GetToken()
+			if err != nil {
+				return false, err
+			}
+			return crypto.VerifyAuthToken(token, db_token), err
+		},
 		ErrorHandler: func(err error, c echo.Context) error {
-			return c.String(http.StatusUnauthorized, "Unauthorized")
+			return LogoutUser(c, "session expired")
 		},
 	}
 	return middleware.KeyAuthWithConfig(middlewareAuthConfig)

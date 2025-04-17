@@ -31,19 +31,7 @@ func VaultPage(c echo.Context) error {
 	}
 
 	if len(DerivedKey) == 0 {
-		_, err := database.DeleteToken()
-		if err != nil {
-			return err
-		}
-
-		clearAuthCookie(c)
-		data := loginPageData{
-			IsNew:      false,
-			IsLoggedIn: false,
-			Error:      "session expired",
-		}
-
-		return c.Render(http.StatusOK, "login", data)
+		return LogoutUser(c, "session expired")
 	}
 
 	return c.Render(http.StatusOK, "vault", data)
@@ -85,20 +73,10 @@ func DeleteEntry(c echo.Context) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	return c.NoContent(http.StatusOK)
 }
 
 func RevealPassword(c echo.Context) error {
-
-	if len(DerivedKey) == 0 {
-		promptMasterPassword := c.Request().Header.Get("HX-Prompt")
-
-		if !AuthenticateUser(promptMasterPassword) {
-			return c.String(http.StatusUnauthorized, "NO")
-		}
-	}
-
 	id := c.Param("id")
 
 	entry, err := database.GetEntry(id)
@@ -109,13 +87,13 @@ func RevealPassword(c echo.Context) error {
 	plainPassword, _ := crypto.DecryptPassword(entry.Password, DerivedKey, entry.Nonce)
 
 	html := fmt.Sprintf(`
-    <div>
+    <div id="password-%s">
         <span>%s</span>
-        <button class="btn" hx-get="/hide/%s" hx-swap="outerHTML" hx-target="closest div">
-          x
-        </button>
+        <div hx-get="/hide/%s" hx-swap="outerHTML" hx-target="#password-%s">
+          <img src="/static/eye-slash-solid.svg" /> 
+        </div>
     </div>
-	`, plainPassword, id)
+	`, id, plainPassword, id, id)
 
 	return c.HTML(http.StatusOK, html)
 }
@@ -124,12 +102,12 @@ func HidePassword(c echo.Context) error {
 	id := c.Param("id")
 
 	html := fmt.Sprintf(`
-    <div>
+    <div id="password-%s">
         <span>•••••••</span>
-        <button class="btn" hx-get="/reveal/%s" hx-swap="outerHTML" hx-target="closest div">
-          x
-        </button>
-  	</div>`, id)
+        <div hx-get="/reveal/%s" hx-swap="outerHTML" hx-target="#password-%s">
+          <img src="/static/eye-solid.svg" /> 
+        </div>
+  	</div>`, id, id, id)
 
 	return c.HTML(http.StatusOK, html)
 }

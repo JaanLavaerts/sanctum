@@ -95,23 +95,7 @@ func Register(c echo.Context) error {
 }
 
 func Logout(c echo.Context) error {
-	clearAuthCookie(c)
-
-	for i := range DerivedKey {
-		DerivedKey[i] = 0
-	}
-
-	res, err := database.DeleteToken()
-	if err != nil {
-		return err
-	}
-
-	if res != 1 {
-		return c.NoContent(http.StatusInternalServerError)
-	}
-
-	c.Response().Header().Set("HX-Redirect", "/")
-	return c.NoContent(http.StatusOK)
+	return LogoutUser(c, "")
 }
 
 func writeAuthCookie(c echo.Context, raw_token string) {
@@ -153,4 +137,22 @@ func AuthenticateUser(formMasterPassword string) bool {
 		log.Fatal(err)
 	}
 	return true
+}
+
+func LogoutUser(c echo.Context, message string) error {
+	clearAuthCookie(c)
+	DerivedKey = nil
+
+	_, err := database.DeleteToken()
+	if err != nil {
+		return err
+	}
+
+	data := loginPageData{
+		IsNew:      false,
+		IsLoggedIn: false,
+		Error:      message,
+	}
+
+	return c.Render(http.StatusOK, "login", data)
 }
