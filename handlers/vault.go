@@ -87,7 +87,7 @@ func RevealPassword(c echo.Context) error {
 	plainPassword, _ := crypto.DecryptPassword(entry.Password, DerivedKey, entry.Nonce)
 
 	html := fmt.Sprintf(`
-    <div id="password-%s">
+    <div class="password" id="password-%s">
         <span>%s</span>
         <div hx-get="/hide/%s" hx-swap="outerHTML" hx-target="#password-%s">
           <img src="/static/eye-slash-solid.svg" /> 
@@ -102,7 +102,7 @@ func HidePassword(c echo.Context) error {
 	id := c.Param("id")
 
 	html := fmt.Sprintf(`
-    <div id="password-%s">
+    <div class="password" id="password-%s">
         <span>•••••••</span>
         <div hx-get="/reveal/%s" hx-swap="outerHTML" hx-target="#password-%s">
           <img src="/static/eye-solid.svg" /> 

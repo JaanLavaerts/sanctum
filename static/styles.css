@@ -107,8 +107,13 @@ form {
     justify-content: space-between;
 }
 
-.reveal-container div {
+.password {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
     gap: 5px;
+}
+
+.password img {
+    width: 1.5rem;
+    heigt: 1.5rem;
 }
