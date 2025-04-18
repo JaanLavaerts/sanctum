@@ -5,18 +5,14 @@
   <span class="entry-field"><span>notes</span>{{ .Notes }}</span>
   <span class="entry-field"><span>date</span>{{ .Timestamp.Format "02-01-2006" }}</span>
   <div class="reveal-container">
-    <span class="entry-field">password</span>
+    <span class="entry-field"><span>password</span></span>
     <div class="password" id="password-{{ .Id }}">
         <span>•••••••</span>
-        <div hx-get="/reveal/{{ .Id }}" hx-swap="outerHTML" hx-target="#password-{{ .Id }}">
-          <img src="/static/eye-solid.svg" /> 
-        </div>
+        <img hx-get="/reveal/{{ .Id }}" hx-swap="outerHTML" hx-target="#password-{{ .Id }}" src="/static/eye-solid.svg" /> 
     </div>
   </div>
-  <div class="action-container">
-      <button class="btn" hx-delete="/delete/{{ .Id }}" hx-confirm="Are you sure?" hx-swap="outerHTML" hx-target="closest li">
-        delete
-      </button>
-  </div>
+  <button class="btn" hx-delete="/delete/{{ .Id }}" hx-confirm="Are you sure?" hx-swap="outerHTML" hx-target="closest li">
+    delete
+  </button>
 </li>
 {{ end }}

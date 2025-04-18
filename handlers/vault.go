@@ -89,9 +89,7 @@ func RevealPassword(c echo.Context) error {
 	html := fmt.Sprintf(`
     <div class="password" id="password-%s">
         <span>%s</span>
-        <div hx-get="/hide/%s" hx-swap="outerHTML" hx-target="#password-%s">
-          <img src="/static/eye-slash-solid.svg" /> 
-        </div>
+        <img hx-get="/hide/%s" hx-swap="outerHTML" hx-target="#password-%s" src="/static/eye-slash-solid.svg" /> 
     </div>
 	`, id, plainPassword, id, id)
 
@@ -104,9 +102,7 @@ func HidePassword(c echo.Context) error {
 	html := fmt.Sprintf(`
     <div class="password" id="password-%s">
         <span>•••••••</span>
-        <div hx-get="/reveal/%s" hx-swap="outerHTML" hx-target="#password-%s">
-          <img src="/static/eye-solid.svg" /> 
-        </div>
+        <img hx-get="/reveal/%s" hx-swap="outerHTML" hx-target="#password-%s" src="/static/eye-solid.svg" /> 
   	</div>`, id, id, id)
 
 	return c.HTML(http.StatusOK, html)
