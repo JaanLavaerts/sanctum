@@ -10,6 +10,9 @@
   {{ if .Error }}
     <span class="error">{{ .Error }}</span>
   {{ end }}
+  {{ if .Success }}
+    <span class="success">{{ .Success }}</span>
+  {{ end }}
   <div>
     <input placeholder="master password" type="password" name="masterpassword" required />
     <button class="btn" type="submit">login</button>

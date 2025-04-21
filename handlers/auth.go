@@ -16,6 +16,7 @@ var DerivedKey []byte
 type loginPageData struct {
 	IsNew      bool
 	Error      string
+	Success    string
 	IsLoggedIn bool
 }
 
@@ -90,8 +91,13 @@ func Register(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	c.Response().Header().Set("HX-Redirect", "/")
-	return c.NoContent(http.StatusOK)
+	data := loginPageData{
+		IsNew:      false,
+		IsLoggedIn: false,
+		Success:    "vault created successfully",
+	}
+
+	return c.Render(http.StatusOK, "login", data)
 }
 
 func Logout(c echo.Context) error {

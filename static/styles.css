@@ -59,6 +59,11 @@ form {
     font-size: 12px;
 }
 
+.success {
+    color: #A6D96A;
+    font-size: 12px;
+}
+
 .vault  {
     display: flex;
     gap: 1rem;
@@ -109,7 +114,7 @@ form {
     justify-content: space-between;
 }
 
-.entry-field span{
+.entry-field span {
     color: #797981;
 }
 
