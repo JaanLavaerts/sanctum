@@ -94,7 +94,7 @@ func Register(c echo.Context) error {
 	data := loginPageData{
 		IsNew:      false,
 		IsLoggedIn: false,
-		Success:    "vault created successfully",
+		Success:    "vault created",
 	}
 
 	return c.Render(http.StatusOK, "login", data)
