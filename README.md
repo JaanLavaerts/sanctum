@@ -24,5 +24,5 @@ Sanctum uses a **token-based authentication** system. On login, the server gener
 
 HTMX lets the backend stay in control of rendering and state, while still delivering a smooth, interactive user experience. It avoids the complexity of JavaScript frameworks, and keeps logic and security server-side—ideal for apps like Sanctum where minimizing frontend surface area is a feature, not a limitation.
 
-> HTMX gives you the power of modern frontend interactivity without the complexity of SPAs.  
+> "HTMX gives you the power of modern frontend interactivity without the complexity of SPAs." 
 > — [HTMX is the Future](https://quii.dev/HTMX_is_the_Future)
