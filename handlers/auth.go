@@ -23,12 +23,14 @@ type loginPageData struct {
 func LoginPage(c echo.Context) error {
 	masterPassword, _, err := database.GetMasterPassword()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error getting master password: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 	auth_token, err := database.GetToken()
 
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error getting auth token: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	data := loginPageData{
@@ -42,27 +44,27 @@ func LoginPage(c echo.Context) error {
 func Login(c echo.Context) error {
 	formMasterPassword := c.FormValue("masterpassword")
 
-	if !AuthenticateUser(formMasterPassword) {
-		data := loginPageData{
-			Error: "wrong master password",
-		}
+	ok, err := AuthenticateUser(formMasterPassword)
+	if err != nil {
+		log.Printf("Authentication error: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	if !ok {
+		data := loginPageData{Error: "wrong master password"}
 		return c.Render(http.StatusOK, "login", data)
 	}
 
-	raw_token, hashed_token := crypto.GenerateAuthToken()
-	writeAuthCookie(c, raw_token)
-
-	res, err := database.InsertToken(hashed_token)
+	raw_token, hashed_token, err := crypto.GenerateAuthToken()
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	if res != 1 {
+		log.Printf("Error generating auth token: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
+	writeAuthCookie(c, raw_token)
 
+	_, err = database.InsertToken(hashed_token)
 	if err != nil {
-		return err
+		log.Printf("Error inserting token: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	c.Response().Header().Set("HX-Redirect", "/vault")
@@ -75,19 +77,18 @@ func Register(c echo.Context) error {
 	salt, err := crypto.GenerateSalt()
 	saltString := base64.RawURLEncoding.EncodeToString(salt)
 	if err != nil {
-		return err
+		log.Printf("Error generating salt: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	hashed_password, err := crypto.GenerateHash(formMasterPassword)
 	if err != nil {
-		log.Fatalf("Error creating hash: %q", err)
+		log.Printf("Error generating hash: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
 	}
-	res, err := database.InserMasterPassword(hashed_password, saltString)
+	_, err = database.InserMasterPassword(hashed_password, saltString)
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	if res != 1 {
+		log.Printf("Error inserting master password: %v", err)
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
@@ -123,26 +124,29 @@ func clearAuthCookie(c echo.Context) {
 	c.SetCookie(cookie)
 }
 
-func AuthenticateUser(formMasterPassword string) bool {
+func AuthenticateUser(formMasterPassword string) (bool, error) {
 	masterPassword, salt, err := database.GetMasterPassword()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error getting master password: %v", err)
+		return false, err
 	}
 
 	saltString, err := base64.RawURLEncoding.DecodeString(salt)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error decoding salt: %v", err)
+		return false, err
 	}
 
 	if !crypto.VerifyMasterPassword(formMasterPassword, masterPassword) {
-		return false
+		return false, nil
 	}
 
 	DerivedKey, err = crypto.DeriveKey(formMasterPassword, saltString)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error deriving key: %v", err)
+		return false, err
 	}
-	return true
+	return true, nil
 }
 
 func LogoutUser(c echo.Context, message string) error {
@@ -151,7 +155,8 @@ func LogoutUser(c echo.Context, message string) error {
 
 	_, err := database.DeleteToken()
 	if err != nil {
-		return err
+		log.Printf("Error deleting token: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	data := loginPageData{

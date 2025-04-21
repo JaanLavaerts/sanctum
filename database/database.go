@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -10,13 +11,13 @@ import (
 )
 
 type Entry struct {
-	Id int64
+	Id        int64
 	Password  string
-	Username string
+	Username  string
 	Site      string
 	Notes     string
 	Timestamp time.Time
-	Nonce string
+	Nonce     string
 }
 
 var DB *sql.DB
@@ -60,16 +61,16 @@ func GetMasterPassword() (string, string, error) {
 
 	row := DB.QueryRow(query)
 
-	var	password_hash string
+	var password_hash string
 	var salt string
 	err := row.Scan(&password_hash, &salt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", "", nil
 		}
-		log.Fatalf("Error getting master password: %q: %s\n", err, query) 
+		return "", "", fmt.Errorf("context info: %w", err)
 	}
-	return password_hash, salt,  nil
+	return password_hash, salt, nil
 }
 
 func InserMasterPassword(password string, salt string) (int64, error) {
@@ -79,7 +80,7 @@ func InserMasterPassword(password string, salt string) (int64, error) {
 
 	result, err := DB.Exec(query, password, salt)
 	if err != nil {
-		log.Fatalf("Error inserting master password: %q: %s\n", err, query) 
+		return 0, fmt.Errorf("context info: %w", err)
 	}
 	return result.RowsAffected()
 }
@@ -89,23 +90,23 @@ func GetEntries() ([]Entry, error) {
 
 	rows, err := DB.Query(query)
 	if err != nil {
-		log.Fatalf("Error getting passwords: %q: %s\n", err, query) 
+		return nil, fmt.Errorf("context info: %w", err)
+
 	}
 
 	defer rows.Close()
 
 	entries := []Entry{}
-    for rows.Next() {
-            var entry Entry
-            err := rows.Scan(&entry.Id, &entry.Password, &entry.Username, &entry.Site, &entry.Notes, &entry.Timestamp)
-            if err != nil {
-				log.Fatalf("Error getting passwords: %q: %s\n", err, query) 
-            }
-            entries = append(entries, entry)
-    }
+	for rows.Next() {
+		var entry Entry
+		err := rows.Scan(&entry.Id, &entry.Password, &entry.Username, &entry.Site, &entry.Notes, &entry.Timestamp)
+		if err != nil {
+			return nil, fmt.Errorf("context info: %w", err)
+		}
+		entries = append(entries, entry)
+	}
 	return entries, nil
 }
-
 
 func InsertEntry(entry Entry) (int64, error) {
 	query := `
@@ -114,19 +115,20 @@ func InsertEntry(entry Entry) (int64, error) {
 
 	result, err := DB.Exec(query, entry.Password, entry.Username, entry.Site, entry.Notes, entry.Timestamp, entry.Nonce)
 	if err != nil {
-		log.Fatalf("Error inserting entry: %q: %s\n", err, query) 
+		return 0, fmt.Errorf("context info: %w", err)
+
 	}
 	return result.LastInsertId()
 }
 
-func DeleteEntry(id string) (error) {
+func DeleteEntry(id string) error {
 	query := `DELETE FROM entries WHERE id = (?);`
 
 	_, err := DB.Exec(query, id)
 	if err != nil {
-		log.Fatalf("Error deleting entry: %q: %s\n", err, query) 
+		return fmt.Errorf("context info: %w", err)
 	}
-	return err 
+	return err
 }
 
 func GetEntry(id string) (Entry, error) {
@@ -137,25 +139,26 @@ func GetEntry(id string) (Entry, error) {
 	entry := Entry{}
 	err := row.Scan(&entry.Id, &entry.Password, &entry.Username, &entry.Site, &entry.Notes, &entry.Timestamp, &entry.Nonce)
 	if err != nil {
-		return Entry{}, err
+		return Entry{}, fmt.Errorf("context info: %w", err)
+
 	}
 
 	return entry, nil
 }
-
 
 func GetToken() (string, error) {
 	query := `SELECT token_hash from auth_token`
 
 	row := DB.QueryRow(query)
 
-	var	token_hash string
+	var token_hash string
 	err := row.Scan(&token_hash)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", nil
 		}
-		log.Fatalf("Error getting token: %q: %s\n", err, query) 
+		return "", fmt.Errorf("context info: %w", err)
+
 	}
 	return token_hash, nil
 }
@@ -167,7 +170,8 @@ func InsertToken(hashed_token string) (int64, error) {
 
 	result, err := DB.Exec(query, hashed_token)
 	if err != nil {
-		log.Fatalf("Error inserting token: %q: %s\n", err, query) 
+		return 0, fmt.Errorf("context info: %w", err)
+
 	}
 	return result.RowsAffected()
 }
@@ -177,7 +181,8 @@ func DeleteToken() (int64, error) {
 
 	result, err := DB.Exec(query)
 	if err != nil {
-		log.Fatalf("Error inserting token: %q: %s\n", err, query) 
+		return 0, fmt.Errorf("context info: %w", err)
+
 	}
 	return result.RowsAffected()
 }

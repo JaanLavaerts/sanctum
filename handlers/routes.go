@@ -33,7 +33,11 @@ func AuthMiddleware() echo.MiddlewareFunc {
 			if err != nil {
 				return false, err
 			}
-			return crypto.VerifyAuthToken(token, db_token), err
+			isValid, verifyErr := crypto.VerifyAuthToken(token, db_token)
+			if verifyErr != nil {
+				return false, verifyErr
+			}
+			return isValid, nil
 		},
 		ErrorHandler: func(err error, c echo.Context) error {
 			return LogoutUser(c, "session expired")

@@ -22,7 +22,8 @@ type vaultPageData struct {
 func VaultPage(c echo.Context) error {
 	entries, err := database.GetEntries()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error getting entries: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	data := vaultPageData{
@@ -59,7 +60,8 @@ func AddEntry(c echo.Context) error {
 
 	id, err := database.InsertEntry(newEntry)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error inserting entry: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	newEntry.Id = id
@@ -71,7 +73,8 @@ func DeleteEntry(c echo.Context) error {
 	id := c.Param("id")
 	err := database.DeleteEntry(id)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error deleting entry: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 	return c.NoContent(http.StatusOK)
 }
@@ -81,7 +84,8 @@ func RevealPassword(c echo.Context) error {
 
 	entry, err := database.GetEntry(id)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error getting entry: %v", err)
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
 	plainPassword, _ := crypto.DecryptPassword(entry.Password, DerivedKey, entry.Nonce)
