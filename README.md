@@ -16,16 +16,21 @@ Passwords are encrypted using **AES-GCM** with a fresh **12-byte nonce** for eac
 
 The derived key is kept in memory during the session and discarded on **server shutdown**. No raw passwords or keys are ever written to disk.
 
-<div align="center" class="grid grid-cols-2 gap-4">
+<div align="center">
     <img src="/images/create-vault.svg" alt="create" width="300" />
-    <img src="/images/auth.svg" alt="auth" width="400" />
-    <img src="/images/add-entry.svg" alt="add" width="300" />
-    <img src="/images/reveal.svg" alt="reveal" width="300" />
+    <div align="center" class="grid grid-cols-2 gap-4">
+        <img src="/images/add-entry.svg" alt="add" width="300" />
+        <img src="/images/reveal.svg" alt="reveal" width="300" />
+    </div>
 </div>
 
 ## Authentication
 
 Sanctum uses a **token-based authentication** system. On login, the server generates **32 random bytes**, encodes them as a **base64 token**, and sends it to the client in a **secure cookie**. A **SHA-256 hash** of this token is stored in the **database**. On each request, the server **rehashes** the token from the cookie and compares it to the stored hash. If they match, the session is valid. Tokens are **invalidated** by deleting the hash and clearing the cookie, ensuring simple and secure stateless auth.
+
+<div align="center"> 
+    <img src="/images/auth.svg" alt="auth" />
+</div>
 
 ## Why HTMX?
 
