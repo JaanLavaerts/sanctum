@@ -9,6 +9,10 @@ It was built as a way to **learn Go and HTMX** by creating something practical, 
 ## How does it work?
 
 <img src="/images/database.svg" alt="db" width="300" />
+<img src="/images/auth.svg" alt="auth" width="300" />
+<img src="/images/create-vault.svg" alt="create" width="300" />
+<img src="/images/reveal.svg" alt="reveal" width="300" />
+<img src="/images/add-entry.svg" alt="add" width="300" />
 
 Sanctum stores all password data in a **SQLite database**, where each entry includes an **encrypted password**, **username**, **site**, **notes**, **timestamp**, and a **per-entry nonce** (used as an IV for encryption).
 
