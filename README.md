@@ -8,13 +8,6 @@ It was built as a way to **learn Go and HTMX** by creating something practical, 
 
 ## How does it work?
 
-<div class="grid grid-cols-2 gap-4">
-    <img src="/images/auth.svg" alt="auth" width="300" />
-    <img src="/images/create-vault.svg" alt="create" width="300" />
-    <img src="/images/add-entry.svg" alt="add" width="300" />
-    <img src="/images/reveal.svg" alt="reveal" width="300" />
-</div>
-
 Sanctum stores all password data in a **SQLite database**, where each entry includes an **encrypted password**, **username**, **site**, **notes**, **timestamp**, and a **per-entry nonce** (used as an IV for encryption).
 
 When the user first starts the app, they are asked to set or enter a **master password**. This password is **hashed using bcrypt** for authentication and stored alongside a randomly generated **salt**. To encrypt and decrypt passwords, Sanctum derives a **32-byte encryption key** from the master password using **scrypt**, which makes brute-force attacks **computationally expensive**.
@@ -22,6 +15,13 @@ When the user first starts the app, they are asked to set or enter a **master pa
 Passwords are encrypted using **AES-GCM** with a fresh **12-byte nonce** for each entry. The result is stored in **base64** along with its **nonce**. Decryption uses the same derived key and nonce to safely recover the original password.
 
 The derived key is kept in memory during the session and discarded on **server shutdown**. No raw passwords or keys are ever written to disk.
+
+<div class="grid grid-cols-2 gap-4">
+    <img src="/images/create-vault.svg" alt="create" width="300" />
+    <img src="/images/auth.svg" alt="auth" width="300" />
+    <img src="/images/add-entry.svg" alt="add" width="300" />
+    <img src="/images/reveal.svg" alt="reveal" width="300" />
+</div>
 
 ## Authentication
 
