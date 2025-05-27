@@ -8,6 +8,8 @@ It was built as a way to **learn Go and HTMX** by creating something practical, 
 
 ## How does it work?
 
+<img src="/images/database.svg" alt="db" />
+
 Sanctum stores all password data in a **SQLite database**, where each entry includes an **encrypted password**, **username**, **site**, **notes**, **timestamp**, and a **per-entry nonce** (used as an IV for encryption).
 
 When the user first starts the app, they are asked to set or enter a **master password**. This password is **hashed using bcrypt** for authentication and stored alongside a randomly generated **salt**. To encrypt and decrypt passwords, Sanctum derives a **32-byte encryption key** from the master password using **scrypt**, which makes brute-force attacks **computationally expensive**.
