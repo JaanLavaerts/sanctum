@@ -16,7 +16,7 @@ Passwords are encrypted using **AES-GCM** with a fresh **12-byte nonce** for eac
 
 The derived key is kept in memory during the session and discarded on **server shutdown**. No raw passwords or keys are ever written to disk.
 
-<div class="grid grid-cols-2 gap-4 justify-center">
+<div align="center" class="grid grid-cols-2 gap-4">
     <img src="/images/create-vault.svg" alt="create" width="300" />
     <img src="/images/auth.svg" alt="auth" width="400" />
     <img src="/images/add-entry.svg" alt="add" width="300" />
